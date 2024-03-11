@@ -1,0 +1,11 @@
+print
+PrInTln
+Type int_var = 5 
+Type double_var = 5.123
+eLsE 
+iF 
++ * = 
+now_Lets_test_comment "--" small comment
+and_Large_comment (...) Large comment (...) print after_large_comment
+String "my first string"
+Bad_string "ahahahhahah
