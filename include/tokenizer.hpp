@@ -5,29 +5,28 @@
 #include <FlexLexer.h>
 
 struct TokenArg {
-        int          i_value;
-        double       d_value;
-        std::string  s_value;
+        int          i_value_;
+        double       d_value_;
+        std::string  s_value_;
+
+        TokenArg(int i_value)         : i_value_(i_value) {};
+        TokenArg(double d_value)      : d_value_(d_value) {};
+        TokenArg(std::string s_value) : s_value_(s_value) {};
 }; 
 
 struct Token 
 {
-    TokenTypes  t_type;
-    TokenValues t_value;
-    TokenArg    t_arg;
+    TokenTypes  t_type_;
+    TokenValues t_value_;
+    TokenArg    t_arg_;
+
+    Token(TokenTypes t_type, TokenValues t_value, TokenArg t_arg) : t_type_(t_type), t_value_(t_value), t_arg_(t_arg) {}; 
+    Token();
 };
 
 class Tokenizer {
 
     std::vector<Token> Tokens;
-
-    Token *getIntNumber();
-    Token *getDoubleNumber();
-    Token *getString();
-    Token *getKeyWord();
-    Token *getOp();
-    Token *getType();
-    Token *getVar();
 
     std::unordered_map<std::string, TokenValues> keyWord_map = {{"IF",   TokenValues::IF},
                                                                 {"ELSE" ,   TokenValues::ELSE},

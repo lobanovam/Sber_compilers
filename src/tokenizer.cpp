@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cctype>
 #include <cmath>
 #include <cstddef>
@@ -13,34 +14,39 @@
 
 int Tokenizer::GetToken(TokenTypes token_type) {
 
+    Token *varToken; 
     switch (token_type) {
 
         case TokenTypes::TYPE_ID:
-            Tokens.push_back(*Tokenizer::getType());
+            Tokens.push_back(Token(TokenTypes::TYPE_ID, TokenValues::NO_VALUE, TokenArg(lexer->YYText())));
             break;
 
         case TokenTypes::VARIABLE:
-            Tokens.push_back(*Tokenizer::getVar());
+            Tokens.push_back(Token(TokenTypes::VARIABLE, TokenValues::NO_VALUE, TokenArg(lexer->YYText())));
             break;
 
         case TokenTypes::KEYWORD:
-            Tokens.push_back(*Tokenizer::getKeyWord());
+            {
+                std::string origin = lexer->YYText();
+                std::for_each(origin.begin(), origin.end(),  [](unsigned char c) { return std::toupper(c); });
+                Tokens.push_back(Token(TokenTypes::KEYWORD, keyWord_map[origin], TokenArg(lexer->YYText())));
+            }
             break;
 
         case TokenTypes::D_NUMBER:
-            Tokens.push_back(*Tokenizer::getDoubleNumber());
+            Tokens.push_back(Token(TokenTypes::D_NUMBER, TokenValues::NO_VALUE, std::stod(lexer->YYText())));
             break;
      
         case TokenTypes::I_NUMBER:
-            Tokens.push_back(*Tokenizer::getIntNumber());
+            Tokens.push_back(Token(TokenTypes::I_NUMBER, TokenValues::NO_VALUE, std::stoi(lexer->YYText())));
             break;
 
         case TokenTypes::STRING:
-            Tokens.push_back(*Tokenizer::getString());
+            Tokens.push_back(Token(TokenTypes::STRING, TokenValues::NO_VALUE, TokenArg(lexer->YYText())));
             break;
         
         case TokenTypes::OP:
-            Tokens.push_back(*Tokenizer::getOp());
+            Tokens.push_back(Token(TokenTypes::OP, op_map[lexer->YYText()], TokenArg(lexer->YYText())));
             break;
 
         case TokenTypes::UNCLOSED_STRING:
@@ -60,117 +66,39 @@ int Tokenizer::GetToken(TokenTypes token_type) {
     return 0;
 }
 
-Token *Tokenizer::getVar() {
-
-    Token *varToken = new Token{};
-    varToken->t_type = TokenTypes::VARIABLE;
-    varToken->t_arg.s_value = lexer->YYText(); 
-
-    return varToken;
-}
-
-Token *Tokenizer::getIntNumber() {
-
-    Token *numToken = new Token{};
-    numToken->t_type = TokenTypes::I_NUMBER;
-    
-    int value = std::stoi(lexer->YYText());
-    numToken->t_value       = TokenValues::NO_VALUE;
-    numToken->t_arg.i_value = value;
-
-    return numToken;
-}
-
-Token *Tokenizer::getDoubleNumber() {
-
-    Token *numToken = new Token{};
-    numToken->t_type = TokenTypes::D_NUMBER;
-    
-    double value = std::stod(lexer->YYText());
-    numToken->t_value = TokenValues::NO_VALUE;
-    numToken->t_arg.d_value = value;
-
-    return numToken;
-}
-
-Token *Tokenizer::getString() {
-
-    Token *stringToken = new Token{};
-    stringToken->t_type = TokenTypes::STRING;
-    stringToken->t_value = TokenValues::NO_VALUE;
-    stringToken->t_arg.s_value = lexer->YYText();
-
-    return stringToken;
-}
-
-Token *Tokenizer::getType() {
-
-    Token *typeToken = new Token{};
-    typeToken->t_type = TokenTypes::TYPE_ID;
-
-    typeToken->t_value = TokenValues::NO_VALUE;
-    typeToken->t_arg.s_value = lexer->YYText(); 
-
-    return typeToken;
-}
-
-Token *Tokenizer::getKeyWord() {
-
-    Token *keyWordToken = new Token{};
-    keyWordToken->t_type = TokenTypes::KEYWORD;
-
-    std::string origin = lexer->YYText();
-    std::string upperCase{};
-    std::transform(origin.begin(), origin.end(), upperCase.begin(),  [](unsigned char c) { return std::toupper(c); });
-
-    keyWordToken->t_value = keyWord_map[upperCase]; 
-    keyWordToken->t_arg.s_value = lexer->YYText(); 
-
-    return keyWordToken;
-}
-
-Token *Tokenizer::getOp() {
-
-    Token *opToken = new Token{};
-    opToken->t_type = TokenTypes::OP;
-    opToken->t_value = op_map[lexer->YYText()];
-    opToken->t_arg.s_value = lexer->YYText();
-
-    return opToken;
-}
 
 void Tokenizer::printTokens() {
 
     size_t size = Tokens.size();
     std::cout << "Total " << size << " correct tokens:" << std::endl;
     for (size_t i = 0; i < size; i++) {
-        switch (Tokens[i].t_type) {
+        switch (Tokens[i].t_type_) {
             case TokenTypes::TYPE_ID:
-                std::cout << "TokenType: TYPE_ID,  TokenValue: " << Tokens[i].t_arg.s_value << std::endl;
+                std::cout << "TokenType: TYPE_ID,  TokenValue: " << Tokens[i].t_arg_.s_value_ << std::endl;
                 break;
 
             case TokenTypes::KEYWORD:
-                std::cout << "TokenType: Keyword,  TokenValue: " << Tokens[i].t_arg.s_value << std::endl;
+                std::cout << "TokenType: Keyword,  TokenValue: " << Tokens[i].t_arg_.s_value_ << std::endl;
                 break;
 
             case TokenTypes::I_NUMBER:
-                std::cout << "TokenType: I_Number, TokenValue: " << Tokens[i].t_arg.i_value << " (int)" <<std::endl; 
+                std::cout << "TokenType: I_Number, TokenValue: " << Tokens[i].t_arg_.i_value_ << " (int)" <<std::endl; 
                 break;
 
             case TokenTypes::D_NUMBER:
-                std::cout << "TokenType: D_Number, TokenValue: " << Tokens[i].t_arg.d_value << " (double)" << std::endl;
+                std::cout << "TokenType: D_Number, TokenValue: " << Tokens[i].t_arg_.d_value_ << " (double)" << std::endl;
                 break;
             
             case TokenTypes::STRING:
-                std::cout << "TokenType: String,   TokenValue: " << Tokens[i].t_arg.s_value << std::endl;
+                std::cout << "TokenType: String,   TokenValue: " << Tokens[i].t_arg_.s_value_ << std::endl;
                 break;
             
             case TokenTypes::VARIABLE:
-                    std::cout << "TokenType: Variable, TokenValue: " << Tokens[i].t_arg.s_value << std::endl;
+                    std::cout << "TokenType: Variable, TokenValue: " << Tokens[i].t_arg_.s_value_ << std::endl;
                 break;
 
             case TokenTypes::OP:
-                    std::cout << "TokenType: OP,       TokenValue: " << Tokens[i].t_arg.s_value << std::endl;
+                    std::cout << "TokenType: OP,       TokenValue: " << Tokens[i].t_arg_.s_value_ << std::endl;
                 break;
         }
     }
